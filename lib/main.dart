@@ -8,6 +8,11 @@ void main() => runApp(Quizzler());
 QuizDatabase _database = QuizDatabase();
 List<Icon> _scoreKeeper = [];
 
+void restartQuiz() {
+  _scoreKeeper = [];
+  _database.startNewQuiz();
+}
+
 class Quizzler extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -39,19 +44,18 @@ class _QuizPageState extends State<QuizPage> {
 
   void checkAnswer(bool userAnswer) {
     setState(() {
-      if (_database.isQuizFinished()) {
+      _database.isAnswerCorrect(givenAnswer: userAnswer)
+          ? addScreenIcon(greenCheck: true)
+          : addScreenIcon(greenCheck: false);
+
+      if (_database.isQuizFinished())
         onAlertWithStylePressed(
           context,
           () => setState(restartQuiz),
           () => SystemNavigator.pop(),
         );
-      } else {
-        _database.isAnswerCorrect(givenAnswer: userAnswer)
-            ? addScreenIcon(greenCheck: true)
-            : addScreenIcon(greenCheck: false);
-
+      else
         _database.getNextQuestion();
-      }
     });
   }
 
@@ -62,7 +66,7 @@ class _QuizPageState extends State<QuizPage> {
     return Column(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: <Widget>[
+      children: [
         Expanded(
           flex: 5,
           child: Padding(
@@ -71,10 +75,7 @@ class _QuizPageState extends State<QuizPage> {
               child: Text(
                 currentQuestion.questionText,
                 textAlign: TextAlign.center,
-                style: TextStyle(
-                  fontSize: 25.0,
-                  color: Colors.white,
-                ),
+                style: TextStyle(fontSize: 25.0, color: Colors.white),
               ),
             ),
           ),
@@ -83,40 +84,34 @@ class _QuizPageState extends State<QuizPage> {
           child: Padding(
             padding: EdgeInsets.all(15.0),
             child: ElevatedButton(
-                style: ButtonStyle(
-                    backgroundColor: MaterialStateColor.resolveWith(
-                        (states) => Colors.green)),
-                child: Text(
-                  'True',
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 20.0,
-                  ),
-                ),
-                onPressed: () =>
-                    //The user picked true.
-                    checkAnswer(true)),
-            //  onAlertWithStylePressed(context)),
+              style: ButtonStyle(
+                backgroundColor:
+                    MaterialStateColor.resolveWith((states) => Colors.green),
+              ),
+              child: Text(
+                'True',
+                style: TextStyle(color: Colors.white, fontSize: 20.0),
+              ),
+              //The user picked true.
+              onPressed: () => checkAnswer(true),
+            ),
           ),
         ),
         Expanded(
           child: Padding(
             padding: EdgeInsets.all(15.0),
             child: ElevatedButton(
-                style: ButtonStyle(
-                  backgroundColor:
-                      MaterialStateColor.resolveWith((states) => Colors.red),
-                ),
-                child: Text(
-                  'False',
-                  style: TextStyle(
-                    fontSize: 20.0,
-                    color: Colors.white,
-                  ),
-                ),
-                onPressed: () =>
-                    //The user picked false.
-                    checkAnswer(false)),
+              style: ButtonStyle(
+                backgroundColor:
+                    MaterialStateColor.resolveWith((states) => Colors.red),
+              ),
+              child: Text(
+                'False',
+                style: TextStyle(fontSize: 20.0, color: Colors.white),
+              ),
+              //The user picked false.
+              onPressed: () => checkAnswer(false),
+            ),
           ),
         ),
         Row(
@@ -125,9 +120,4 @@ class _QuizPageState extends State<QuizPage> {
       ],
     );
   }
-}
-
-void restartQuiz() {
-  _scoreKeeper = [];
-  _database.startNewQuiz();
 }
